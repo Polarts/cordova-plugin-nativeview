@@ -109,6 +109,13 @@ public class NativeView extends CordovaPlugin {
 
         final Intent intentToStart = configureIntent(args, activityParams, callbackContext);
 
+        /**
+         * The cordova ref is important because "execute" takes an anonymous Runnable class.
+         * The anonymous class doesn't extend CordovaPlugin, and JVM would look for "this.cordova"
+         * before realizing it's a reference from another class. That means it'll most likely
+         * crash on the first try
+         */
+        CordovaInterface cordovaRef = this.cordova;
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
@@ -120,7 +127,7 @@ public class NativeView extends CordovaPlugin {
                      *
                      * @see https://www.journaldev.com/10463/android-notification-pendingintent
                      */
-                    cordova.getActivity().startActivity(intentToStart);
+                    cordovaRef.getActivity().startActivity(intentToStart);
                     JSONObject success = new JSONObject();
                     success.put("success", true);
                     success.put("message", "Native screen is started");
@@ -238,37 +245,37 @@ public class NativeView extends CordovaPlugin {
         }
     }
 
-    public void getBuildVariant(JSONArray args, final CallbackContext callbackContext) {
+    // public void getBuildVariant(JSONArray args, final CallbackContext callbackContext) {
 
-        if (args.length() > 0) {
+    //     if (args.length() > 0) {
 
-            try{
+    //         try{
 
-                JSONObject params = args.getJSONObject(0);
+    //             JSONObject params = args.getJSONObject(0);
 
-                if (params.has("catchError") && params.optBoolean("catchError", true)) {
+    //             if (params.has("catchError") && params.optBoolean("catchError", true)) {
 
-                    if (BuildConfig.FLAVOR == null || BuildConfig.FLAVOR.length() == 0) {
+    //                 if (BuildConfig.FLAVOR == null || BuildConfig.FLAVOR.length() == 0) {
 
-                        JSONObject error = new JSONObject();
-                        error.put("success", false);
-                        error.put("message", "The FLAVOR is not defined. Verify your build.gradle 'productFlavors' config");
+    //                     JSONObject error = new JSONObject();
+    //                     error.put("success", false);
+    //                     error.put("message", "The FLAVOR is not defined. Verify your build.gradle 'productFlavors' config");
 
-                        callbackContext.error(error);
-                        return;
-                    }
-                }
+    //                     callbackContext.error(error);
+    //                     return;
+    //                 }
+    //             }
 
-            }catch (JSONException e) {
-                JSONObject error = errorResult(e);
+    //         }catch (JSONException e) {
+    //             JSONObject error = errorResult(e);
 
-                callbackContext.error(error);
-            }
-        }
+    //             callbackContext.error(error);
+    //         }
+    //     }
 
 
-        callbackContext.success(BuildConfig.FLAVOR);
-    }
+    //     callbackContext.success(BuildConfig.FLAVOR);
+    // }
 
     protected JSONObject mountParams(JSONArray args) throws JSONException {
 
